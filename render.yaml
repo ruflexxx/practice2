@@ -12,7 +12,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: MONGODB_URI
-        sync: false   # Set in Render dashboard
+        sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRES_IN
@@ -25,7 +25,7 @@ services:
     name: taskflow-ui
     rootDir: frontend
     buildCommand: echo "No build step"
-    staticPublishPath: .
+    staticPublishPath: .  
     envVars: []
     headers:
       - path: /*
