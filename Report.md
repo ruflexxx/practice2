@@ -43,7 +43,7 @@ TaskFlow is a comprehensive, modern Task Management application designed to help
    ```env
    PORT=5000
    MONGODB_URI=mongodb://localhost:27017/taskflow
-   JWT_SECRET=your_jwt_secret_key
+   JWT_SECRET
    JWT_EXPIRES_IN=7d
    NODE_ENV=development
    ```
