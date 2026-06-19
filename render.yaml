@@ -34,4 +34,4 @@ services:
     routes:
       - type: rewrite
         source: /api/*
-        destination: https://practice2-ud6n.onrender.com*
+        destination: https://practice2-ud6n.onrender.com/api/*
