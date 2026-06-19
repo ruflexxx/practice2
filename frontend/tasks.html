@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>All Tasks — TaskFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="app-layout">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">✅</div>
+      <span>TaskFlow</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Main</div>
+      <a class="nav-item" data-page="dashboard" href="index.html"><span class="nav-icon">🏠</span> Dashboard</a>
+      <a class="nav-item" data-page="tasks" href="tasks.html"><span class="nav-icon">✅</span> All Tasks</a>
+      <a class="nav-item" data-page="categories" href="categories.html"><span class="nav-icon">🏷️</span> Categories</a>
+      <div class="nav-section-title" style="margin-top:8px">Quick Filters</div>
+      <a class="nav-item" href="tasks.html?status=pending"><span class="nav-icon">⏳</span> Pending</a>
+      <a class="nav-item" href="tasks.html?status=in-progress"><span class="nav-icon">🔄</span> In Progress</a>
+      <a class="nav-item" href="tasks.html?status=completed"><span class="nav-icon">✔️</span> Completed</a>
+      <a class="nav-item" href="tasks.html?overdue=true"><span class="nav-icon">🔥</span> Overdue</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user" onclick="window.location.href='profile.html'">
+        <div class="avatar" id="sidebar-avatar">U</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebar-user-name">Loading...</div>
+          <div class="sidebar-user-email" id="sidebar-user-email"></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <main class="main-content">
+    <header class="topbar">
+      <button class="hamburger btn btn-ghost" id="hamburger"><span></span><span></span><span></span></button>
+      <div class="topbar-title">All Tasks</div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-icon" id="theme-toggle">🌙</button>
+        <button class="btn btn-primary" id="new-task-btn">+ New Task</button>
+        <button class="btn btn-ghost btn-sm" onclick="Auth.logout()">Logout</button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="form-input" id="search-input" placeholder="Search tasks..." />
+          <button class="clear-btn btn btn-ghost btn-icon" id="clear-search">✕</button>
+        </div>
+
+        <select class="filter-select" id="filter-status">
+          <option value="">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="in-progress">In Progress</option>
+          <option value="completed">Completed</option>
+        </select>
+
+        <select class="filter-select" id="filter-priority">
+          <option value="">All Priorities</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+
+        <select class="filter-select" id="filter-category">
+          <option value="">All Categories</option>
+        </select>
+
+        <select class="filter-select" id="filter-sort">
+          <option value="-createdAt">Newest First</option>
+          <option value="createdAt">Oldest First</option>
+          <option value="dueDate">Due Date ↑</option>
+          <option value="-dueDate">Due Date ↓</option>
+          <option value="-priority">Priority</option>
+          <option value="title">Title A–Z</option>
+        </select>
+
+        <button class="btn btn-secondary btn-sm" id="reset-filters">Reset</button>
+      </div>
+
+      <!-- Task list -->
+      <div id="task-list" class="task-list"></div>
+
+      <!-- Pagination -->
+      <div class="pagination" id="pagination" style="display:none">
+        <div class="pagination-info" id="pagination-info"></div>
+        <div class="pagination-controls" id="pagination-controls"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Task Modal (shared) -->
+<div class="modal-overlay" id="task-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-title">New Task</h3>
+      <button class="btn btn-ghost btn-icon" id="close-modal">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="task-form" novalidate>
+        <div class="form-group">
+          <label class="form-label">Title <span class="required">*</span></label>
+          <input type="text" id="task-title" class="form-input" placeholder="What needs to be done?" maxlength="100" />
+          <div class="form-error" id="title-error"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea id="task-desc" class="form-textarea" placeholder="Add details..." maxlength="1000"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select id="task-status" class="form-select">
+              <option value="pending">Pending</option>
+              <option value="in-progress">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Priority</label>
+            <select id="task-priority" class="form-select">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Due Date</label>
+            <input type="date" id="task-due" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="task-category" class="form-select">
+              <option value="">No category</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tags</label>
+          <div class="tags-input-wrapper" id="tags-wrapper">
+            <input type="text" id="tags-input" placeholder="Type and press Enter..." />
+          </div>
+          <div class="form-hint">Press Enter or comma to add a tag</div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="cancel-modal">Cancel</button>
+      <button class="btn btn-primary" id="save-task-btn">Create Task</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+
+<script src="js/api.js"></script>
+<script src="js/tasks.js"></script>
+<script>
+  requireAuth();
+  Theme.init();
+  initSidebar();
+  initSidebarUser();
+  initThemeToggle();
+  setActiveNav('tasks');
+
+  let currentPage = 1;
+  const LIMIT = 10;
+
+  // Read URL params
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlStatus = urlParams.get('status') || '';
+  const urlOverdue = urlParams.get('overdue') || '';
+
+  // Restore saved filter or apply URL params
+  const savedFilter = FilterState.load();
+
+  const searchInput = document.getElementById('search-input');
+  const filterStatus = document.getElementById('filter-status');
+  const filterPriority = document.getElementById('filter-priority');
+  const filterCategory = document.getElementById('filter-category');
+  const filterSort = document.getElementById('filter-sort');
+
+  // Apply initial state: URL params take precedence over saved
+  if (urlStatus) {
+    filterStatus.value = urlStatus;
+  } else if (savedFilter.status) {
+    filterStatus.value = savedFilter.status;
+  }
+
+  if (!urlStatus && !urlOverdue) {
+    if (savedFilter.search) searchInput.value = savedFilter.search;
+    if (savedFilter.priority) filterPriority.value = savedFilter.priority;
+    if (savedFilter.sort) filterSort.value = savedFilter.sort;
+  }
+
+  // Load categories into filter dropdown
+  async function loadFilterCategories() {
+    try {
+      const res = await api.get('/categories');
+      filterCategory.innerHTML = '<option value="">All Categories</option>' +
+        res.data.map(c => `<option value="${c._id}">${c.icon || '📁'} ${c.name}</option>`).join('');
+      if (savedFilter.category) filterCategory.value = savedFilter.category;
+    } catch {}
+  }
+
+  async function loadTasks(page = 1) {
+    currentPage = page;
+    const search = searchInput.value.trim();
+    const status = filterStatus.value;
+    const priority = filterPriority.value;
+    const category = filterCategory.value;
+    const sort = filterSort.value;
+
+    // Save filter state to localStorage
+    FilterState.save({ search, status, priority, category, sort });
+
+    // Show/hide clear search button
+    document.getElementById('clear-search').classList.toggle('visible', !!search);
+
+    let url = `/tasks?page=${page}&limit=${LIMIT}&sort=${sort}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    if (status) url += `&status=${status}`;
+    if (priority) url += `&priority=${priority}`;
+    if (category) url += `&category=${category}`;
+    if (urlOverdue) url += `&dueBefore=${new Date().toISOString()}&status=pending`;
+
+    document.getElementById('task-list').innerHTML =
+      '<div class="skeleton" style="height:72px;border-radius:10px;margin-bottom:10px"></div>'.repeat(3);
+
+    try {
+      const res = await api.get(url);
+      renderTaskList(res.data, 'task-list');
+      renderPagination(res.pagination);
+    } catch (err) {
+      Toast.error('Failed to load tasks');
+      document.getElementById('task-list').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><h3>Error loading tasks</h3></div>';
+    }
+  }
+
+  function renderPagination(p) {
+    const paginationEl = document.getElementById('pagination');
+    const infoEl = document.getElementById('pagination-info');
+    const controlsEl = document.getElementById('pagination-controls');
+
+    if (!p || p.totalPages <= 1) {
+      paginationEl.style.display = 'none';
+      return;
+    }
+
+    paginationEl.style.display = 'flex';
+    const start = (p.page - 1) * p.limit + 1;
+    const end = Math.min(p.page * p.limit, p.total);
+    infoEl.textContent = `Showing ${start}–${end} of ${p.total} tasks`;
+
+    let controls = `<button class="page-btn" ${p.page <= 1 ? 'disabled' : ''} onclick="loadTasks(${p.page - 1})">‹</button>`;
+
+    for (let i = 1; i <= p.totalPages; i++) {
+      if (i === 1 || i === p.totalPages || (i >= p.page - 1 && i <= p.page + 1)) {
+        controls += `<button class="page-btn ${i === p.page ? 'active' : ''}" onclick="loadTasks(${i})">${i}</button>`;
+      } else if (i === p.page - 2 || i === p.page + 2) {
+        controls += `<span class="page-btn" style="cursor:default;border:none">…</span>`;
+      }
+    }
+
+    controls += `<button class="page-btn" ${!p.hasNext ? 'disabled' : ''} onclick="loadTasks(${p.page + 1})">›</button>`;
+    controlsEl.innerHTML = controls;
+  }
+
+  // Event listeners
+  const debouncedLoad = debounce(() => loadTasks(1), 350);
+  searchInput.addEventListener('input', debouncedLoad);
+  filterStatus.addEventListener('change', () => loadTasks(1));
+  filterPriority.addEventListener('change', () => loadTasks(1));
+  filterCategory.addEventListener('change', () => loadTasks(1));
+  filterSort.addEventListener('change', () => loadTasks(1));
+
+  document.getElementById('clear-search').addEventListener('click', () => {
+    searchInput.value = '';
+    document.getElementById('clear-search').classList.remove('visible');
+    loadTasks(1);
+  });
+
+  document.getElementById('reset-filters').addEventListener('click', () => {
+    searchInput.value = '';
+    filterStatus.value = '';
+    filterPriority.value = '';
+    filterCategory.value = '';
+    filterSort.value = '-createdAt';
+    FilterState.save({});
+    document.getElementById('clear-search').classList.remove('visible');
+    loadTasks(1);
+    // Clear URL params
+    window.history.replaceState({}, '', window.location.pathname);
+  });
+
+  // New Task button
+  document.getElementById('new-task-btn').addEventListener('click', () => openTaskModal());
+  document.getElementById('close-modal').addEventListener('click', closeModal);
+  document.getElementById('cancel-modal').addEventListener('click', closeModal);
+  document.getElementById('task-modal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeModal();
+  });
+
+  // Init
+  loadFilterCategories().then(() => loadTasks(1));
+</script>
+</body>
+</html>

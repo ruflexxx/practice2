@@ -1,0 +1,37 @@
+services:
+  # Backend API
+  - type: web
+    name: taskflow-api
+    env: node
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false   # Set in Render dashboard
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: CLIENT_URL
+        value: https://taskflow-ui.onrender.com
+
+  # Frontend static site
+  - type: static
+    name: taskflow-ui
+    rootDir: frontend
+    buildCommand: echo "No build step"
+    staticPublishPath: .
+    envVars: []
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://taskflow-api.onrender.com/api/*

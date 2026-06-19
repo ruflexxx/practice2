@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile — TaskFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 768px) { .profile-grid { grid-template-columns: 1fr; } }
+    .section-title { font-size: 1rem; font-weight: 700; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--color-border); }
+    .info-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--color-border); font-size: 0.875rem; }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: var(--color-text-muted); font-weight: 500; }
+    .info-value { font-weight: 500; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">✅</div>
+      <span>TaskFlow</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Main</div>
+      <a class="nav-item" href="index.html"><span class="nav-icon">🏠</span> Dashboard</a>
+      <a class="nav-item" href="tasks.html"><span class="nav-icon">✅</span> All Tasks</a>
+      <a class="nav-item" href="categories.html"><span class="nav-icon">🏷️</span> Categories</a>
+      <div class="nav-section-title" style="margin-top:8px">Quick Filters</div>
+      <a class="nav-item" href="tasks.html?status=pending"><span class="nav-icon">⏳</span> Pending</a>
+      <a class="nav-item" href="tasks.html?status=in-progress"><span class="nav-icon">🔄</span> In Progress</a>
+      <a class="nav-item" href="tasks.html?status=completed"><span class="nav-icon">✔️</span> Completed</a>
+      <a class="nav-item" href="tasks.html?overdue=true"><span class="nav-icon">🔥</span> Overdue</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user" onclick="window.location.href='profile.html'">
+        <div class="avatar" id="sidebar-avatar">U</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebar-user-name">Loading...</div>
+          <div class="sidebar-user-email" id="sidebar-user-email"></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <main class="main-content">
+    <header class="topbar">
+      <button class="hamburger btn btn-ghost" id="hamburger"><span></span><span></span><span></span></button>
+      <div class="topbar-title">My Profile</div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-icon" id="theme-toggle">🌙</button>
+        <button class="btn btn-ghost btn-sm" onclick="Auth.logout()">Logout</button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <!-- Profile Header -->
+      <div class="profile-header card mb-4">
+        <div class="avatar avatar-lg" id="profile-avatar">U</div>
+        <div style="flex:1">
+          <h2 id="profile-name">Loading...</h2>
+          <p class="text-muted" id="profile-email"></p>
+          <p class="text-muted" style="font-size:0.8rem;margin-top:4px" id="profile-joined"></p>
+        </div>
+        <div>
+          <button class="btn btn-secondary" onclick="document.getElementById('edit-section').scrollIntoView({behavior:'smooth'})">
+            ✏️ Edit Profile
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid mb-4">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(99,102,241,0.12)">📋</div>
+          <div class="stat-value" id="p-total">—</div>
+          <div class="stat-label">Total Tasks</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(16,185,129,0.12)">✅</div>
+          <div class="stat-value" id="p-completed">—</div>
+          <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(245,158,11,0.12)">⏳</div>
+          <div class="stat-value" id="p-pending">—</div>
+          <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(239,68,68,0.12)">🔥</div>
+          <div class="stat-value text-danger" id="p-overdue">—</div>
+          <div class="stat-label">Overdue</div>
+        </div>
+      </div>
+
+      <div class="profile-grid" id="edit-section">
+        <!-- Edit Profile -->
+        <div class="card">
+          <div class="section-title">Edit Profile</div>
+          <form id="profile-form" novalidate>
+            <div class="form-group">
+              <label class="form-label">Full Name <span class="required">*</span></label>
+              <input type="text" id="edit-name" class="form-input" placeholder="Your name" />
+              <div class="form-error" id="edit-name-error"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" id="edit-email" class="form-input" disabled style="opacity:0.6" />
+              <div class="form-hint">Email cannot be changed</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              <input type="tel" id="edit-phone" class="form-input" placeholder="+1 234 567 8900" />
+              <div class="form-error" id="edit-phone-error"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Default Theme</label>
+              <select id="edit-theme" class="form-select">
+                <option value="light">☀️ Light</option>
+                <option value="dark">🌙 Dark</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Default View</label>
+              <select id="edit-view" class="form-select">
+                <option value="list">📋 List</option>
+                <option value="board">📊 Board</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary w-full" id="save-profile-btn">Save Changes</button>
+          </form>
+        </div>
+
+        <!-- Change Password -->
+        <div class="card">
+          <div class="section-title">Change Password</div>
+          <form id="password-form" novalidate>
+            <div class="form-group">
+              <label class="form-label">Current Password <span class="required">*</span></label>
+              <div class="password-wrapper">
+                <input type="password" id="current-pwd" class="form-input" placeholder="Your current password" />
+                <span class="password-toggle" onclick="togglePwd('current-pwd', this)">👁</span>
+              </div>
+              <div class="form-error" id="current-pwd-error"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">New Password <span class="required">*</span></label>
+              <div class="password-wrapper">
+                <input type="password" id="new-pwd" class="form-input" placeholder="Min 6 chars, upper + lower + number" />
+                <span class="password-toggle" onclick="togglePwd('new-pwd', this)">👁</span>
+              </div>
+              <div class="form-error" id="new-pwd-error"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm New Password <span class="required">*</span></label>
+              <div class="password-wrapper">
+                <input type="password" id="confirm-pwd" class="form-input" placeholder="Repeat new password" />
+                <span class="password-toggle" onclick="togglePwd('confirm-pwd', this)">👁</span>
+              </div>
+              <div class="form-error" id="confirm-pwd-error"></div>
+            </div>
+            <button type="submit" class="btn btn-primary w-full" id="save-pwd-btn">Update Password</button>
+          </form>
+
+          <!-- Account Info -->
+          <div class="divider"></div>
+          <div class="section-title">Account Info</div>
+          <div class="info-row">
+            <span class="info-label">Member since</span>
+            <span class="info-value" id="info-joined">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Phone</span>
+            <span class="info-value" id="info-phone">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Theme</span>
+            <span class="info-value" id="info-theme">—</span>
+          </div>
+
+          <div class="divider"></div>
+          <button class="btn btn-danger w-full" onclick="confirmLogout()">🚪 Log Out</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+
+<script src="js/api.js"></script>
+<script>
+  requireAuth();
+  Theme.init();
+  initSidebar();
+  initSidebarUser();
+  initThemeToggle();
+
+  function togglePwd(inputId, btn) {
+    const input = document.getElementById(inputId);
+    input.type = input.type === 'password' ? 'text' : 'password';
+    btn.textContent = input.type === 'password' ? '👁' : '🙈';
+  }
+
+  async function loadProfile() {
+    try {
+      const res = await api.get('/users/profile');
+      const { user, stats } = res;
+
+      // Header
+      document.getElementById('profile-avatar').textContent = user.name.charAt(0).toUpperCase();
+      document.getElementById('profile-name').textContent = user.name;
+      document.getElementById('profile-email').textContent = user.email;
+      document.getElementById('profile-joined').textContent = 'Member since ' + new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+      // Stats
+      document.getElementById('p-total').textContent = stats.totalTasks;
+      document.getElementById('p-completed').textContent = stats.completedTasks;
+      document.getElementById('p-pending').textContent = stats.pendingTasks;
+      document.getElementById('p-overdue').textContent = stats.overdueTasks;
+
+      // Form
+      document.getElementById('edit-name').value = user.name;
+      document.getElementById('edit-email').value = user.email;
+      document.getElementById('edit-phone').value = user.phone || '';
+      document.getElementById('edit-theme').value = user.preferences?.theme || 'light';
+      document.getElementById('edit-view').value = user.preferences?.defaultView || 'list';
+
+      // Info
+      document.getElementById('info-joined').textContent = new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      document.getElementById('info-phone').textContent = user.phone || 'Not set';
+      document.getElementById('info-theme').textContent = (user.preferences?.theme || 'light') === 'dark' ? '🌙 Dark' : '☀️ Light';
+    } catch {
+      Toast.error('Failed to load profile');
+    }
+  }
+
+  // Profile form submit
+  document.getElementById('profile-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById('edit-name').value.trim();
+    const phone = document.getElementById('edit-phone').value.trim();
+
+    // Validate
+    let valid = true;
+    document.getElementById('edit-name-error').classList.remove('visible');
+    document.getElementById('edit-phone-error').classList.remove('visible');
+
+    if (!name || name.length < 2) {
+      document.getElementById('edit-name').classList.add('error');
+      const err = document.getElementById('edit-name-error');
+      err.textContent = 'Name must be at least 2 characters';
+      err.classList.add('visible');
+      valid = false;
+    }
+
+    if (phone && !/^\+?[\d\s\-()]{7,15}$/.test(phone)) {
+      document.getElementById('edit-phone').classList.add('error');
+      const err = document.getElementById('edit-phone-error');
+      err.textContent = 'Please enter a valid phone number';
+      err.classList.add('visible');
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    const btn = document.getElementById('save-profile-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Saving...';
+
+    try {
+      const theme = document.getElementById('edit-theme').value;
+      const data = await api.put('/users/profile', {
+        name,
+        phone: phone || null,
+        preferences: {
+          theme,
+          defaultView: document.getElementById('edit-view').value
+        }
+      });
+
+      Auth.setUser(data.user);
+      Theme.set(theme);
+      initSidebarUser();
+      document.getElementById('profile-avatar').textContent = name.charAt(0).toUpperCase();
+      document.getElementById('profile-name').textContent = name;
+      Toast.success('Profile updated!');
+      loadProfile();
+    } catch (err) {
+      Toast.error(err.message || 'Failed to update profile');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Save Changes';
+    }
+  });
+
+  // Password form submit
+  document.getElementById('password-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const current = document.getElementById('current-pwd').value;
+    const newPwd = document.getElementById('new-pwd').value;
+    const confirm = document.getElementById('confirm-pwd').value;
+
+    // Clear errors
+    ['current-pwd', 'new-pwd', 'confirm-pwd'].forEach(id => {
+      document.getElementById(id).classList.remove('error');
+      document.getElementById(id + '-error').classList.remove('visible');
+    });
+
+    let valid = true;
+
+    if (!current) {
+      document.getElementById('current-pwd').classList.add('error');
+      const e = document.getElementById('current-pwd-error');
+      e.textContent = 'Current password is required';
+      e.classList.add('visible');
+      valid = false;
+    }
+
+    if (!newPwd || newPwd.length < 6) {
+      document.getElementById('new-pwd').classList.add('error');
+      const e = document.getElementById('new-pwd-error');
+      e.textContent = 'Password must be at least 6 characters';
+      e.classList.add('visible');
+      valid = false;
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPwd)) {
+      document.getElementById('new-pwd').classList.add('error');
+      const e = document.getElementById('new-pwd-error');
+      e.textContent = 'Must contain uppercase, lowercase and a number';
+      e.classList.add('visible');
+      valid = false;
+    }
+
+    if (newPwd !== confirm) {
+      document.getElementById('confirm-pwd').classList.add('error');
+      const e = document.getElementById('confirm-pwd-error');
+      e.textContent = 'Passwords do not match';
+      e.classList.add('visible');
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    const btn = document.getElementById('save-pwd-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Updating...';
+
+    try {
+      await api.put('/users/change-password', { currentPassword: current, newPassword: newPwd });
+      Toast.success('Password updated successfully!');
+      document.getElementById('password-form').reset();
+    } catch (err) {
+      Toast.error(err.message || 'Failed to update password');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Update Password';
+    }
+  });
+
+  function confirmLogout() {
+    if (confirm('Are you sure you want to log out?')) Auth.logout();
+  }
+
+  loadProfile();
+</script>
+</body>
+</html>

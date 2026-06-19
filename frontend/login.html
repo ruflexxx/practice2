@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — TaskFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-icon">✅</div>
+      <h1>TaskFlow</h1>
+    </div>
+    <p class="auth-subtitle">Sign in to manage your tasks</p>
+
+    <form id="login-form" novalidate>
+      <div class="form-group">
+        <label class="form-label" for="email">Email <span class="required">*</span></label>
+        <input type="email" id="email" class="form-input" placeholder="you@example.com" autocomplete="email" />
+        <div class="form-error" id="email-error"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password <span class="required">*</span></label>
+        <div class="password-wrapper">
+          <input type="password" id="password" class="form-input" placeholder="••••••••" autocomplete="current-password" />
+          <span class="password-toggle" id="pwd-toggle">👁</span>
+        </div>
+        <div class="form-error" id="password-error"></div>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-full btn-lg" id="login-btn">
+        Sign In
+      </button>
+    </form>
+
+    <div class="auth-divider"><span>Don't have an account?</span></div>
+    <a href="register.html" class="btn btn-secondary w-full" style="justify-content:center">Create Account</a>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+
+<script src="js/api.js"></script>
+<script>
+  redirectIfLoggedIn();
+  Theme.init();
+
+  // Password toggle
+  document.getElementById('pwd-toggle').addEventListener('click', function () {
+    const input = document.getElementById('password');
+    input.type = input.type === 'password' ? 'text' : 'password';
+    this.textContent = input.type === 'password' ? '👁' : '🙈';
+  });
+
+  // Validation
+  function validateForm() {
+    let valid = true;
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
+    const emailErr = document.getElementById('email-error');
+    const pwdErr = document.getElementById('password-error');
+
+    // Reset
+    [email, password].forEach(el => el.classList.remove('error'));
+    [emailErr, pwdErr].forEach(el => { el.textContent = ''; el.classList.remove('visible'); });
+
+    // Email
+    if (!email.value.trim()) {
+      email.classList.add('error');
+      emailErr.textContent = 'Email is required';
+      emailErr.classList.add('visible');
+      valid = false;
+    } else if (!/^\S+@\S+\.\S+$/.test(email.value.trim())) {
+      email.classList.add('error');
+      emailErr.textContent = 'Please enter a valid email address';
+      emailErr.classList.add('visible');
+      valid = false;
+    }
+
+    // Password
+    if (!password.value) {
+      password.classList.add('error');
+      pwdErr.textContent = 'Password is required';
+      pwdErr.classList.add('visible');
+      valid = false;
+    }
+
+    return valid;
+  }
+
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    const btn = document.getElementById('login-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Signing in...';
+
+    try {
+      const data = await api.post('/auth/login', {
+        email: document.getElementById('email').value.trim(),
+        password: document.getElementById('password').value
+      });
+
+      Auth.setToken(data.token);
+      Auth.setUser(data.user);
+      Theme.set(data.user?.preferences?.theme || 'light');
+      Toast.success('Welcome back, ' + data.user.name + '!');
+      setTimeout(() => window.location.href = 'index.html', 500);
+    } catch (err) {
+      Toast.error(err.message || 'Login failed');
+      btn.disabled = false;
+      btn.innerHTML = 'Sign In';
+    }
+  });
+</script>
+</body>
+</html>
