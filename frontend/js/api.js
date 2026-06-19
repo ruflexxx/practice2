@@ -4,7 +4,7 @@
 
 const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
   ? 'http://localhost:5000/api'
-  : '/api'; // same origin on deployment
+  : 'https://practice2-ud6n.onrender.com/api';
 
 // ---- Token management ----
 const Auth = {
